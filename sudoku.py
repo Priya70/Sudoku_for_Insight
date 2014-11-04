@@ -1,13 +1,13 @@
 #/usr/bin/python
 '''
-A very basic sudoku solver taht seems to solve the "easy" puzzles and some "medium" ones.
-It does not search and backtrack - just updates. and propogates.
+A sudoku solver-- seems to work with the easy, medium and some hard sudoku's.
 usage: python sudoku.py  csv_file
 
 '''
+
 import logging
 import sys
-
+logging.basicConfig(filename='sudoku.log',level=logging.DEBUG, filemode='w')
 
 def create_grid():
     '''function to create the basic grid that I will use- ie every 'square' (there are 81 square) is located by its coordinates:(row#,col#)'''   
@@ -66,20 +66,19 @@ def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr
             union= set(row_values_s+col_values_s+neighbor_values_s)-set([d])
             tmp=[k for k in d if k not in list(union)]
             if len(tmp)>1:
-               # print "debug3"
+               # print "debug1"
                 sudoku_grid[s]=('').join(tmp)
             elif len(tmp)==1:
-                #print "debug 4"
+                #print "debug 2"
                 sudoku_grid[s]=tmp[0]
                 continue
             else:                    
-                print "Error at square"
-                sys.exit()                     
+                print "Looks like a hard sudoku....try next iteration!"
+                continue
+                #print s,d,tmp
+                #display(sudoku_grid,squares)
+                #sys.exit()                     
     cntr+=1
-    #return sudoku_grid            
-    #print "finished 1st for loop"
-   # display(sudoku_grid,squares) 
-    #print "flag=",flag         
     values=[sudoku_grid[sq]for sq in squares]
     if(all([len(v) == 1 for  v in values])): 
         flag=1
@@ -94,12 +93,6 @@ def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr
         flag=-1
         return sudoku_grid,flag 
         
-
-
-
-
-
-
 
 def main(args):
     csv_file=args[1]
@@ -118,7 +111,7 @@ def main(args):
     for s, d in sudoku_grid.items():
         if d =='0': #ie d==0
             sudoku_grid[s]=possible_values[s]  
-   # display(sudoku_grid,squares)
+    display(sudoku_grid,squares)
     cntr=0
     res,flag=update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr)                      
     if flag ==1:
@@ -126,8 +119,24 @@ def main(args):
         sys.exit()
     elif flag==-1:
         ## go into the search loop.
-        print "solution cannot be found by elimination alone-need to try all possible values" 
-        
+        print "solution cannot be found by elimination alone-trying with possible values..." 
+        #list of all squares with more than one possible choice- 
+        #[(sudoku_grid[sq],sq) for sq in squares if len(sudoku_grid[sq])>1]
+        #choose a sq with fewest possibilities to improve odd of being correct!
+        while flag==-1:
+            t,my_sq=min((len(sudoku_grid[sq]),sq) for sq in squares if len(sudoku_grid[sq])>1)
+            for d in sudoku_grid[my_sq]:
+                sudoku_grid[my_sq]=str(d)
+                new_res,flag=update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr)  
+             #   if flag==-1:
+             #      continue 
+        final_res,flag=update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr)
+        if flag==1:
+            #sudoku solved! 
+            print display(final_res,squares) 
+            sys.exit()  
+        else:
+            "error cannot solve sudoku"            
      
 if __name__ == '__main__':
     if len(sys.argv) == 2:
@@ -138,10 +147,14 @@ if __name__ == '__main__':
 '''
 run with tests: using the example csv provided in the challenge    
 python sudoku.py sudoku_test1.csv  
-
-
-
+python sudoku.py sudoku_easy2.csv 
 python sudoku.py sudoku_easy3.csv 
+python sudoku.py sudoku_medium1.csv
+python sudoku.py sudoku_medium2.csv 
+python sudoku.py sudoku_med3.csv 
+python sudoku.py sudoku_hard1.csv 
+python sudoku.py sudoku_hard2.csv 
+
 
 '''
 
