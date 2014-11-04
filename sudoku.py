@@ -44,17 +44,17 @@ def get_neighbors(sqA,neighbors_list):
         if sqA in n:
             return n
 
-def display(sudoku_grid):
+def display(sudoku_grid,squares):
     '''function to display the resulting sudoku as a 9x9 grid'''
     #convert to integer
-    solution=[int(d) for s,d in sudoku_grid.items()]    
+    solution=[int(sudoku_grid[sq]) for sq in squares]    
     for i in range(0,9):
         print solution[0+i*9:9+i*9]
-    
+    return 
 
-def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list): 
-    '''function that recursively eliminates possible values after comparison with other squares in row_list, col_list and neighbors_list '''
-    flag=0
+def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares): 
+    '''function that eliminates possible values after comparison with other squares in row_list, col_list and neighbors_list '''
+    flag=0    
     for s, d in sudoku_grid.items():
         if len(d)>1:
             row_s=get_row(s, row_list) 
@@ -66,41 +66,29 @@ def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list):
             union= set(row_values_s+col_values_s+neighbor_values_s)-set([d])
             tmp=[k for k in d if k not in list(union)]
             if len(tmp)>1:
-                print "debug3"
+               # print "debug3"
                 sudoku_grid[s]=('').join(tmp)
             elif len(tmp)==1:
-                print "debug 4"
+                #print "debug 4"
                 sudoku_grid[s]=tmp[0]
+                continue
             else:                    
-                print "Error at square",s
-                exit     
-    display(sudoku_grid) 
-    print "flag=",flag         
-    values=[d for s,d in sudoku_grid.items()] 
-    for v in values:
-        if len(v)>1:
-            print "in debug1"
-            print v,len(v)
-            update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list)  
-        elif len(v)==1:
-            #check that the length of all values is 1 -if so sudoku is solved!
-            if(all([len(v) == 1 for  v in values])): 
-                print "debug 2"
-                flag=1
-                print flag, "sudoku solved"
-                return sudoku_grid  
-            else: # all values are not of length 1; continue to the next object in v    
-                print "debug 5"
-                print "Lenght of v",len(v)
-                continue                
-        else: 
-            #if the length ==0 -return with Error message 
-            print "error"
-            sys.exit(0)             
-#[d for s,d in sudoku_grid.items()] # list of all values    
-#[s for s,d in sudoku_grid.items() if d == '0'] 
-
-
+                print "Error at square"
+                exit                     
+    #return sudoku_grid            
+    #print "finished 1st for loop"
+   # display(sudoku_grid,squares) 
+    #print "flag=",flag         
+    values=[sudoku_grid[sq]for sq in squares]
+    if(all([len(v) == 1 for  v in values])): 
+        flag=1
+        print "sudoku solved"
+        return sudoku_grid 
+       # return sudoku_grid
+    else: 
+        #find the squares where the len(values)>1
+        return update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares)  
+        
 
 def main(args):
     csv_file=args[1]
@@ -119,13 +107,9 @@ def main(args):
     for s, d in sudoku_grid.items():
         if d =='0': #ie d==0
             sudoku_grid[s]=possible_values[s]  
-    display(sudoku_grid)
-    res=update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list)                  
-    print res
-    '''if flag_val==1:
-        print "sudoku solved"
-        display(res)  
-    ''' 
+   # display(sudoku_grid,squares)
+    res=update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares)                      
+    print display(res,squares)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
