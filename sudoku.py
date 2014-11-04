@@ -52,9 +52,9 @@ def display(sudoku_grid,squares):
         print solution[0+i*9:9+i*9]
     return 
 
-def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares): 
+def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr): 
     '''function that eliminates possible values after comparison with other squares in row_list, col_list and neighbors_list '''
-    flag=0    
+    flag=0  
     for s, d in sudoku_grid.items():
         if len(d)>1:
             row_s=get_row(s, row_list) 
@@ -74,7 +74,8 @@ def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares):
                 continue
             else:                    
                 print "Error at square"
-                exit                     
+                sys.exit()                     
+    cntr+=1
     #return sudoku_grid            
     #print "finished 1st for loop"
    # display(sudoku_grid,squares) 
@@ -83,12 +84,22 @@ def update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares):
     if(all([len(v) == 1 for  v in values])): 
         flag=1
         print "sudoku solved"
-        return sudoku_grid 
+        return sudoku_grid,flag 
        # return sudoku_grid
-    else: 
+    elif (cntr<100): 
         #find the squares where the len(values)>1
-        return update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares)  
+        return update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr)  
+    else :
+        #have run enough iterations - seems like we have to try substituting possible values and search for a solution 
+        flag=-1
+        return sudoku_grid,flag 
         
+
+
+
+
+
+
 
 def main(args):
     csv_file=args[1]
@@ -108,12 +119,30 @@ def main(args):
         if d =='0': #ie d==0
             sudoku_grid[s]=possible_values[s]  
    # display(sudoku_grid,squares)
-    res=update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares)                      
-    print display(res,squares)
-
+    cntr=0
+    res,flag=update_sudoku_grid(sudoku_grid,row_list,col_list,neighbors_list,squares,cntr)                      
+    if flag ==1:
+        print display(res,squares)
+        sys.exit()
+    elif flag==-1:
+        ## go into the search loop.
+        print "solution cannot be found by elimination alone-need to try all possible values" 
+        
+     
 if __name__ == '__main__':
     if len(sys.argv) == 2:
        # print "length is ", len(sys.argv)
         main(sys.argv) 
-
         
+##########################
+'''
+run with tests: using the example csv provided in the challenge    
+python sudoku.py sudoku_test1.csv  
+
+
+
+python sudoku.py sudoku_easy3.csv 
+
+'''
+
+    
